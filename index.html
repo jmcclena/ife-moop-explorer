@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IFE MOOP Explorer</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Third-party libs (CDN) -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+  <header id="topbar">
+    <h1>IFE&nbsp;MOOP&nbsp;Explorer</h1>
+    <nav id="tabs">
+      <button class="tab active" data-view="pareto">Pareto</button>
+      <button class="tab" data-view="scatter">Scatter</button>
+      <button class="tab" data-view="dist">Distributions</button>
+      <button class="tab" data-view="convergence">Convergence</button>
+      <button class="tab" data-view="reactor">Reactor</button>
+    </nav>
+    <div id="datastatus" class="datastatus">no data</div>
+  </header>
+
+  <div id="layout">
+    <!-- ===== Sidebar: global filters + per-view controls ===== -->
+    <aside id="sidebar">
+      <section class="panel">
+        <h2>Data source</h2>
+        <div id="dropzone" class="dropzone">
+          <span id="dropzone-label">Drop an <code>extract.csv</code> here<br/>or click to choose</span>
+          <input type="file" id="fileinput" accept=".csv" hidden />
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Filters</h2>
+        <label class="check"><input type="checkbox" id="f-success" checked /> success only</label>
+        <label class="check"><input type="checkbox" id="f-feasible" /> feasible only</label>
+        <div class="field">
+          <label for="f-gen">Generations: <span id="f-gen-label">all</span></label>
+          <div class="genrange">
+            <input type="range" id="f-gen-lo" min="0" max="1" value="0" step="1" />
+            <input type="range" id="f-gen-hi" min="0" max="1" value="1" step="1" />
+          </div>
+        </div>
+        <button id="reset-filters" class="btn">Reset filters</button>
+        <div id="filter-count" class="muted"></div>
+      </section>
+
+      <!-- Per-view controls, shown/hidden by app.js -->
+      <section class="panel view-controls" data-view="pareto">
+        <h2>Pareto</h2>
+        <label class="check"><input type="checkbox" id="pareto-front" checked /> show Pareto front</label>
+        <p class="muted">x = net electric power (max), y = levelized CoE (min), color = generation.</p>
+      </section>
+
+      <section class="panel view-controls hidden" data-view="scatter">
+        <h2>Scatter axes</h2>
+        <div class="field"><label for="s-x">X</label><select id="s-x"></select>
+          <label class="check small"><input type="checkbox" id="s-xlog" /> log</label></div>
+        <div class="field"><label for="s-y">Y</label><select id="s-y"></select>
+          <label class="check small"><input type="checkbox" id="s-ylog" /> log</label></div>
+        <div class="field"><label for="s-color">Color</label><select id="s-color"></select></div>
+        <div class="field"><label for="s-size">Size</label><select id="s-size"></select></div>
+      </section>
+
+      <section class="panel view-controls hidden" data-view="dist">
+        <h2>Distribution</h2>
+        <div class="field"><label for="d-col">Column</label><select id="d-col"></select></div>
+        <div class="field"><label for="d-bins">Bins</label>
+          <input type="number" id="d-bins" min="5" max="200" value="40" /></div>
+        <label class="check"><input type="checkbox" id="d-split" /> split by feasibility</label>
+      </section>
+
+      <section class="panel view-controls hidden" data-view="convergence">
+        <h2>Convergence</h2>
+        <div class="field"><label for="c-obj">Objective</label>
+          <select id="c-obj">
+            <option value="P_electric_net|max">max net electric power</option>
+            <option value="levelized_CoE|min">min levelized CoE</option>
+          </select></div>
+        <label class="check"><input type="checkbox" id="c-feasible" checked /> feasible points only</label>
+      </section>
+
+      <section class="panel view-controls hidden" data-view="reactor">
+        <h2>Reactor</h2>
+        <div class="field"><label for="r-design">Design</label>
+          <select id="r-design">
+            <option value="selected">Selected design</option>
+            <option value="maxpow">Max net power</option>
+            <option value="mincoe">Lowest CoE</option>
+            <option value="maxgain">Highest gain</option>
+          </select></div>
+        <label class="check"><input type="checkbox" id="r-animate" checked /> animate implosion</label>
+        <button id="r-fire" class="btn">Fire ▸</button>
+        <p class="muted">Cross-section of one IFE target — ablator / DT fuel / hotspot shells drawn to scale, with converging driver beams. Click a point in any view to load it here.</p>
+      </section>
+    </aside>
+
+    <!-- ===== Main plot + detail panel ===== -->
+    <main id="main">
+      <div id="plot"></div>
+      <aside id="detail" class="hidden">
+        <div class="detail-head">
+          <h2>Design detail</h2>
+          <button id="detail-close" class="btn small">close</button>
+        </div>
+        <table id="detail-table"></table>
+      </aside>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/plots.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
